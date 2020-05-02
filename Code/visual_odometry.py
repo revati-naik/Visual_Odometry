@@ -6,6 +6,7 @@ import ReadCameraModel
 import UndistortImage
 import featureMatch
 import fundamentalMatrix
+import inliersRansac
 
 
 def main():
@@ -47,7 +48,10 @@ def main():
 	x1 = features[:,:3]
 	x2 = features[:,3:]
 	# 
-	fundamentalMatrix.estimateFundamentalMatrix(x1=x1, x2=x2)
+	f = fundamentalMatrix.estimateFundamentalMatrix(x1=x1, x2=x2)
+
+	print("Fundamnetal Matrix", f)
+
 
 
 if __name__ == '__main__':
