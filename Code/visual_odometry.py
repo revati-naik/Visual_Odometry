@@ -1,3 +1,5 @@
+
+import sys
 import cv2
 import numpy as np 
 import matplotlib.pyplot as plt
@@ -7,14 +9,19 @@ import UndistortImage
 import featureMatch
 import fundamentalMatrix
 import inliersRansac
-
+import essentialmatrix
+import cameraPose
+import triangulation
+import drawLines
 
 def main():
 	########## DATA PREPARATION ##########################
 	fig, ax = plt.subplots(3,2)
 	# Read the image in Bayer form
-	img_bayer = cv2.imread('../Oxford_dataset/stereo/centre/1399381509571009.png')
-	img_bayer_next =  cv2.imread('../Oxford_dataset/stereo/centre/1399381571937696.png')
+
+
+	img_bayer = cv2.imread('../Oxford_dataset/stereo/centre/1399381445767267.png')
+	img_bayer_next =  cv2.imread('../Oxford_dataset/stereo/centre/1399381445829757.png')
 	# cv2.imshow("img_bayer", img_bayer)
 	ax[0][0].imshow(img_bayer)
 	ax[0][1].imshow(img_bayer_next)
@@ -47,11 +54,82 @@ def main():
 	features = featureMatch.featureMatch(img_1=img_undistort, img_2=img_undistort_next)
 	x1 = features[:,:3]
 	x2 = features[:,3:]
-	# 
-	f = fundamentalMatrix.estimateFundamentalMatrix(x1=x1, x2=x2)
 
-	print("Fundamnetal Matrix", f)
+	# print("x1", x1[0])
+	# print("x2", x2[0])
 
+	pts1 = np.int32(x1[:,:2])
+	# pts1 = pts1.reshape(-1,1,2)
+	pts2 = np.int32(x2[:,:2])
+	# pts2 = pts2.reshape(-1,1,2)
+
+	# print("pts1", pts1[0]) 
+	# print("pts2", pts2[0]) 
+
+
+
+	x1_inlier, x2_inlier = inliersRansac.getInliersRansac(features=features, threshold=0.02, size=8, num_inliers=0.6*features.shape[0], num_iters=500)
+
+	f = fundamentalMatrix.estimateFundamentalMatrix(x1=x1_inlier, x2=x2_inlier)
+	print("Fundamnetal Matrix Normalised: ", f)
+
+
+
+	F,_ = cv2.findFundamentalMat(x1, x2, cv2.RANSAC)
+	print("Fundamental Matrix Direct: ", F)
+	
+	# for i in range(0,):
+	# x2 = x2[3]
+	# val_1 = np.matmul(x2.T, np.matmul(F,x1[3]))
+	# val_2 = np.matmul(x2.T, np.matmul(f,x1[3]))
+	# print("val_1: ", val_1)
+	# print("val_2: ", val_2)
+
+	# k = np.array([[fx, 0, cx],
+	# 	[0, fy, cy],
+	# 	[0, 0, 1]])
+	# print("k", k)
+	# sys.exit(0)
+
+	# e = essentialmatrix.estimateEssentialMatrix(fundamental_matrix=f, camera_matrix=k)
+
+	# print("e", e)
+
+	# C, R = cameraPose.extractCameraPose(essential_matrix=e)
+	# print("Position: ", C)
+	# print("Orientation: ", R)
+
+	# world_points = []
+
+	# for i in range(x1_inlier.shape[0]):
+	# 	x1 = x1_inlier[i]
+	# 	x2 = x2_inlier[i]
+
+	# 	for j in range(0,4):
+	# 		for k in range(0,4):
+
+	# 			X = triangulation.getTrinagulation(fundamental_matrix=f, c_1=C[j], c_2=C[k], r_1=R[j], r_2=R[k], x1=x1, x2=x2)
+
+	# 			world_points.append(X)
+
+	# world_points = np.array(world_points)
+	# print("world_points", world_points)
+
+	# Calculating my epiline
+	# my_line_1 = 
+
+	lines1 = cv2.computeCorrespondEpilines(pts2.reshape(-1,1,2), 2,f)
+	lines2 = cv2.computeCorrespondEpilines(pts2.reshape(-1,1,2), 2,F)
+	lines1 = lines1.reshape(-1,3)
+	lines2 = lines2.reshape(-1,3)
+	img3,img4 = drawLines.drawlines(img_color,img_color_next,lines1,pts1,pts2)
+	img5,img6 = drawLines.drawlines(img_color,img_color_next,lines2,pts1,pts2)
+	plt.subplot(121),plt.imshow(img3)
+	plt.subplot(122),plt.imshow(img4)
+	plt.show()
+	plt.subplot(221),plt.imshow(img5)
+	plt.subplot(222),plt.imshow(img6)
+	plt.show()
 
 
 if __name__ == '__main__':

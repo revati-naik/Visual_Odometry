@@ -1,5 +1,7 @@
-import numpy as np 
+import sys
 import cv2
+import numpy as np 
+import matplotlib.pyplot as plt 
 
 
 def featureMatch(img_1, img_2):
@@ -39,10 +41,10 @@ def featureMatch(img_1, img_2):
 	features = np.array(features).astype(np.float32)
 
 	# print("features", features[1])
-	# Draw first 10 matches.
-	# img3 = cv2.drawMatches(img_color,kp1,img_color_next,kp2,matches[:50], None,flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+	#Draw first 10 matches.
+	# img3 = cv2.drawMatches(img_1,kp1,img_2,kp2,matches[:50], None,flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 	# plt.figure()
 	# plt.imshow(img3)
 	# plt.show()
-
+	# sys.exit(0)
 	return features
