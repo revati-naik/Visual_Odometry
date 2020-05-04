@@ -10,7 +10,7 @@ def extractCameraPose(essential_matrix):
 	C3 = U[:,-1]
 	C4 = -U[:,-1]
 
-	print(V.shape)
+	# print(V.shape)
 
 	R1 = np.matmul(U,np.matmul(W,V))
 	R2 = np.matmul(U,np.matmul(W,V))
